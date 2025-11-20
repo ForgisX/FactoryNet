@@ -74,3 +74,6 @@ site/
 
 # System files
 Thumbs.db 
+
+# Ignore datasets folder
+dataset/
