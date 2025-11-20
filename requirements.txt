@@ -7,3 +7,4 @@ flake8
 datasets
 matplotlib
 tqdm
+kagglehub
