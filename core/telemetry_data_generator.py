@@ -6,7 +6,9 @@ from typing import Any, Dict, List, Literal, Optional, Tuple
 import matplotlib.pyplot as plt
 import numpy as np
 
-from telemetry_dataset import TelemetryData
+# When running from within the `core` directory.
+from telemetry_dataset import TelemetryData  
+
 
 from tqdm.auto import tqdm
 
