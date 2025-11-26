@@ -8,3 +8,6 @@ datasets
 matplotlib
 tqdm
 kagglehub
+docling
+llama-index
+llama-index-core
