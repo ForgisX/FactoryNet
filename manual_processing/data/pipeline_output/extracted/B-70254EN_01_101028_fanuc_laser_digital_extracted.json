@@ -1,0 +1,605 @@
+{
+  "source_file": "B-70254EN_01_101028_fanuc_laser_digital.md",
+  "metadata": {
+    "model": "C1000 i A\n\nOperator",
+    "manufacturer": "FANUC",
+    "manual_id": "B-70254EN/01",
+    "manual_type": "Operator's Manual"
+  },
+  "fault_codes": [
+    {
+      "code": "LIST",
+      "description": "D.    GLOSSARY",
+      "fixing_instruction": null,
+      "extraction_method": "pattern_match"
+    },
+    {
+      "code": "lamp",
+      "description": "The  alarm  lamp  blinks  while  discharge  is in progress or whenever laser radiation is possible. While the alarm lamp is blinking, pay careful attention to laser radiation and high voltages.",
+      "fixing_instruction": null,
+      "extraction_method": "pattern_match"
+    },
+    {
+      "code": "s",
+      "description": "in each unit  from occurring due to condensation.",
+      "fixing_instruction": null,
+      "extraction_method": "pattern_match"
+    },
+    {
+      "code": "lamp",
+      "description": "replacement                | Every 3000, or when the lamp fails to light                |",
+      "fixing_instruction": null,
+      "extraction_method": "pattern_match"
+    },
+    {
+      "code": "Check",
+      "description": "that  the  O-ring  is  fit  to  the  hexagonal-head screw on the oil inlet, then tighten the screw (recommended torque: 7.85Nm)",
+      "fixing_instruction": null,
+      "extraction_method": "pattern_match"
+    },
+    {
+      "code": "occurs",
+      "description": ",  the  alarm  number and message are displayed  on the CNC screen.",
+      "fixing_instruction": null,
+      "extraction_method": "pattern_match"
+    },
+    {
+      "code": "S",
+      "description": "After identifying the following items, call the FANUC service center. In  some  cases,  a  symptom  is  not  actually  a  fault  in  the  oscillator, although it looks like a fault. So, check it with the following sections.",
+      "fixing_instruction": null,
+      "extraction_method": "pattern_match"
+    },
+    {
+      "code": "number",
+      "description": "(d) How often the fault occurs",
+      "fixing_instruction": null,
+      "extraction_method": "pattern_match"
+    },
+    {
+      "code": "MESSAGE",
+      "description": "LIST",
+      "fixing_instruction": "|\n|           4066 | DISCHARGING          |\n|           4067 | LASER CABINET OH     |\n|           4068 | BEAM REFLECTION      |\n|           4069 | LASER IF PCB         |\n|           4070 | CHILLER NOT READY    |\n|           4071 | ASSIST GAS NOT REA",
+      "extraction_method": "pattern_match"
+    },
+    {
+      "code": "number",
+      "description": "| Contents             |",
+      "fixing_instruction": "|\n|           4066 | DISCHARGING          |\n|           4067 | LASER CABINET OH     |\n|           4068 | BEAM REFLECTION      |\n|           4069 | LASER IF PCB         |\n|           4070 | CHILLER NOT READY    |\n|           4071 | ASSIST GAS NOT READY |\n|           4072 | CHILL FLOW",
+      "extraction_method": "pattern_match"
+    },
+    {
+      "code": "MESSAGES",
+      "description": "ON THE SCREEN",
+      "fixing_instruction": "|\n|-------|---------------------------|-----------------------------------------------------------------------------------------------------------|\n|     1 | Anomaly of AD converter 1 | It is necessary to replace AD converter 1 mounted on B8 on A16B-2100-0141. Call the FAN",
+      "extraction_method": "pattern_match"
+    },
+    {
+      "code": "is",
+      "description": "displayed  if  an  error  occurs  in  the  laser  power supply unit or the power  supply unit performs protective operation. Fully check the cause of the error because the power supply unit also performs protective operation if an error occurs in other than the power supply unit itself. This alarm will recur after replacement of the power supply alone without eliminating the root cause.",
+      "fixing_instruction": "|\n|----|--------------------------------|-------------------------------------------------------------------------------------------------",
+      "extraction_method": "pattern_match"
+    },
+    {
+      "code": "is",
+      "description": "issued when the LED of a laser power supply unit is not turned on.                                                                                                                                                                                                                                | The IF PCB is faulty. Poor cable contact                                                                          |",
+      "fixing_instruction": null,
+      "extraction_method": "pattern_match"
+    },
+    {
+      "code": "occurs",
+      "description": "before discharge begins. An instantaneous HVON alarm occurs.                                                                                                                                                                                                                                  | The laser power supply is defective.                                                                              |",
+      "fixing_instruction": null,
+      "extraction_method": "pattern_match"
+    },
+    {
+      "code": "is",
+      "description": "DCV alarm.                                                                                                                                                                                                                     | The laser power supply is maladjusted.                                                                            |",
+      "fixing_instruction": null,
+      "extraction_method": "pattern_match"
+    },
+    {
+      "code": "is",
+      "description": "DCV alarm.                                                 | The intra-tube pressure of the laser gas is high or the gas composition is not normal (excessive amount of He).   |",
+      "fixing_instruction": "## 5 . TROUBLESHOOTING",
+      "extraction_method": "pattern_match"
+    },
+    {
+      "code": "may",
+      "description": "occur.                                                                                                                                                                                                                                             | Anomaly of the Laser power-supply unit itself (anomaly of alarm circuit).                                         |",
+      "fixing_instruction": "## 5 . TROUBLESHOOTING",
+      "extraction_method": "pattern_match"
+    },
+    {
+      "code": "y",
+      "description": "sections, then improve external piping.                                                                                                                                               |",
+      "fixing_instruction": null,
+      "extraction_method": "pattern_match"
+    },
+    {
+      "code": "y",
+      "description": "O-ring | It is necessary to replace or adjust the part. Call the FANUC service center.                                                                                                                          |",
+      "fixing_instruction": "|\n|-------|-----------------------------------|-------------------------------------------------------------------------------|\n|     1 | Shutter clamp not removed",
+      "extraction_method": "pattern_match"
+    },
+    {
+      "code": "occurs",
+      "description": "when the shutter does not operate normally for the  shutter  open/close  commands.  The  table  below  lists  the causes of the fault and the corresponding countermeasures.",
+      "fixing_instruction": "|\n|-------|-----------------------------------|-------------------------------------------------------------------------------|\n|     1 | Shutter clamp not removed.        | Remove the shutter clamp.                                                     |\n|     2 | Anomaly of position detector      | It is necessary to replace or adjust the part. Call the FANUC service cente",
+      "extraction_method": "pattern_match"
+    },
+    {
+      "code": "occurs",
+      "description": "when at least one discharge tube discharges hard and causes high voltage.",
+      "fixing_instruction": "|\n|-------|----------------------------------|----------------------------------------------------------------------------------------|\n|     1 | Anomaly of parameter setting     | Check whether the numeric values in the parameter list supplied with the unit are set. |\n|     2 | Anomaly of laser gas composition | Use the laser gas with the specified composition and",
+      "extraction_method": "pattern_match"
+    },
+    {
+      "code": "when",
+      "description": "it  exceeds  60 ° C.  When  the temperature  decreases,  the  alarm  state  is  solved  automatically. Before that it cannot be reset. (The C1000 i A does not have the sensor.)",
+      "fixing_instruction": "|\n|-------|------------------------------------------------|--------------------------------------------------------------------------------------|\n|     1 | Excessive environmental temperature            | Lower the ambient temperature by ventilation (5 to 30 )                              |\n|     2 | Excessive cooling water temperature            | Se",
+      "extraction_method": "pattern_match"
+    },
+    {
+      "code": "is",
+      "description": "issued,  if  a  workpiece  reflects  laser  beam  more than the rating to the laser oscillator.    This can happen when the laser beam is used to drill, cut, or weld materials (such as copper, brass, and aluminum) having a high reflectivity to the laser beam (10.6 µ m).",
+      "fixing_instruction": "|\n|----|--------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------|\n|  1 | Excessive returning beam back into the resonator | Lower the output specified in the command, or take an action to r",
+      "extraction_method": "pattern_match"
+    },
+    {
+      "code": "detection",
+      "description": "| Check the settings of parameter Nos. 15265 and 15266 with the corresponding values in the parameter table attached to the unit. |",
+      "fixing_instruction": "",
+      "extraction_method": "pattern_match"
+    },
+    {
+      "code": "appears",
+      "description": "when  there  occurs  the  anomaly  in  the stabilized power unit voltage +5, ± 15, +24V of IF PCB for NC interface.",
+      "fixing_instruction": "|\n|-------|------------------------------------------------|----------------------------------------------------------------------------------|\n|     1 | Fuse blowing                                   | It is necessary to replace or adjust the part. Call the FANUC service center.    |\n|     2 | Anomaly of stabilized power source unit        |",
+      "extraction_method": "pattern_match"
+    },
+    {
+      "code": "Check",
+      "description": "the operation of the chiller.",
+      "fixing_instruction": null,
+      "extraction_method": "pattern_match"
+    },
+    {
+      "code": "Check",
+      "description": "the  operation  of  the  assist  gas  supply  unit.  Also  check whether there is the assist gas.",
+      "fixing_instruction": "",
+      "extraction_method": "pattern_match"
+    },
+    {
+      "code": "is",
+      "description": "issued also when in G32P α Q β , α is not 0 to 3, or β is not 1 to 7 during program execution.",
+      "fixing_instruction": "",
+      "extraction_method": "pattern_match"
+    },
+    {
+      "code": "appears",
+      "description": "when the water shortage takes place.",
+      "fixing_instruction": "",
+      "extraction_method": "pattern_match"
+    },
+    {
+      "code": "is",
+      "description": "issued if cooling water is supplied at a flow rate even slightly below the specified value. |",
+      "fixing_instruction": null,
+      "extraction_method": "pattern_match"
+    },
+    {
+      "code": "is",
+      "description": "issued,  if  this  pressure  becomes  lower  than  the permissible level.",
+      "fixing_instruction": "|\n|-------|-----------------------------------------------------|---------------------------------------",
+      "extraction_method": "pattern_match"
+    },
+    {
+      "code": "occurs",
+      "description": "when  the  sensor  detects condensation. After this alarm occurs, the alarm status cannot be reset until the condensation status is released. Do not blow hot air of 60 ° C or higher on the condensation sensor. Flowing dry air in the oscillator is effective.",
+      "fixing_instruction": "|\n|-------|-------------------------------------------------|-------------------------------------------------------------------------------|\n|     1 | Tool low cooling water temperature              | Set the water temperature near the room temperature (plus about 1 ° C).       |\n|     2 | Connecting anomaly of condensation sensor cable | It is necessary to",
+      "extraction_method": "pattern_match"
+    },
+    {
+      "code": "is",
+      "description": "issued, if the monitored laser output is much lower than the specified laser output, that is the monitored laser output is  lower  than  the  specified  output  by  a  value  specified  in parameter No. 15271.",
+      "fixing_instruction": "|\n|-------|-------------------------------------------------------------|-------------------------------------------------------------------------------|\n|     1 | Lack of output from laser power sensor unit                 | It is necessary to replace or adjust the part. Call the FANUC service center. |\n|     2 | Connecting anomaly of the cable o",
+      "extraction_method": "pattern_match"
+    },
+    {
+      "code": "when",
+      "description": "the  temperature  of  the absorber  exceeds  a  critical  one.  In  the  usual  operation,  the irradiation of the absorber takes place only during the calibration after the oscillator start.",
+      "fixing_instruction": "|\n|-------|--------------------------------------|--------------------------------------|\n|     1 | Insufficient cooling water           | It is necessary to replace the part. |\n|     2 | Temperature sensor wired incorrectly | Call the FANUC service center.       |\n|     3 | Temperature sensor abnormal          |                                      |\n|     4 | Absorber abnormal                    |",
+      "extraction_method": "pattern_match"
+    },
+    {
+      "code": "is",
+      "description": "issued,  if  the monitored gas pressure deviates by ± 100 (1330Pa) from the set gas pressure.",
+      "fixing_instruction": "|\n|-------|------------------------------------------------------|------------------------------",
+      "extraction_method": "pattern_match"
+    },
+    {
+      "code": "is",
+      "description": "displayed.  To  reset  the  alarm,  remove  the  cause  of trouble,  release  the  emergency  stop  button,  and  press  the  reset key on the operator' s panel.",
+      "fixing_instruction": "",
+      "extraction_method": "pattern_match"
+    },
+    {
+      "code": "occurs",
+      "description": "when the pressure does not reach the exhaust completion pressure specified  for  parameter  No.  15240  until  the  specified  time (default: 10 minutes) has elapsed after the start of exhaust.",
+      "fixing_instruction": "|\n|-------|--------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------|\n|     1 | Incorrect gas pressure control parameter setting",
+      "extraction_method": "pattern_match"
+    },
+    {
+      "code": "occurs",
+      "description": "when  the pressure does not fall within this range. When no error occurs, the turbo blower rotates and the discharge start ready condition (LRDY) is established.",
+      "fixing_instruction": "|\n|-------|------------------------------------------------------|------------------------------",
+      "extraction_method": "pattern_match"
+    },
+    {
+      "code": "appears",
+      "description": "when the signal of the pressure sensor used vanishes.",
+      "fixing_instruction": "|\n|-------|-----------------------------------------------------------------------------|-------------------------------------------------------------------------------|\n|     1 | Open or poor contact in connection cable between pressure sensor and IF PCB | It is necessary to replace or adjust the part. Call the FANUC service cente",
+      "extraction_method": "pattern_match"
+    },
+    {
+      "code": "occurs",
+      "description": "when  the  shutter  does  not  reach  the  correct position at a certain time (pre-flow time of assist gas) after the shutter open command.",
+      "fixing_instruction": "|\n|-------|-----------------------------------------------------------------------|-------------------------------------------------------------------------------|\n|     1 | The pre-flow time of assist gas is too short for the shutter to open. | Adjust the pre-flow time on setting screen. It should be longer than 0.6 sec. |\n|     2 | Whe",
+      "extraction_method": "pattern_match"
+    },
+    {
+      "code": "was",
+      "description": "issued.               | Check the cause of occurred alarm, then take appropriate action.              |",
+      "fixing_instruction": "",
+      "extraction_method": "pattern_match"
+    },
+    {
+      "code": "appears",
+      "description": "when the laser output power decreases and takes an abnormally higher calibration coefficient.",
+      "fixing_instruction": "|\n|-------|-------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------|\n|     1 | An optical part in the laser resonator is out of position.  | It is nec",
+      "extraction_method": "pattern_match"
+    },
+    {
+      "code": "is",
+      "description": "issued when the temperature of the shutter mirror exceeds a preset maximum. The table below lists the causes of faults and the corresponding countermeasures.",
+      "fixing_instruction": "|\n|-------|---------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------|\n|     1 | Contamination of",
+      "extraction_method": "pattern_match"
+    },
+    {
+      "code": "recurs",
+      "description": "after the shutter mirror is cleaned, it is necessary to replace the mirror. Call the FANUC service center. |",
+      "fixing_instruction": null,
+      "extraction_method": "pattern_match"
+    },
+    {
+      "code": "y",
+      "description": "| It is necessary to replace the part. Call the FANUC service center.                                                                                       |",
+      "fixing_instruction": null,
+      "extraction_method": "pattern_match"
+    },
+    {
+      "code": "is",
+      "description": "issued, if the voltage applied to the discharge tube drops largely.",
+      "fixing_instruction": "",
+      "extraction_method": "pattern_match"
+    },
+    {
+      "code": "is",
+      "description": "issued,  if  the  automatically  set  discharge  tube voltage  is  lower  than  the  discharge  voltage  specified  at  the previous  RUN  time, by at least the  amount specified in parameter No. 15272.",
+      "fixing_instruction": "|\n|-------|-----------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------|\n|     1 | The laser gas composition is not as specified.",
+      "extraction_method": "pattern_match"
+    },
+    {
+      "code": "is",
+      "description": "issued, if an attempt is made to radiate a laser beam, when no assist gas is selected, or an assist gas condition is not set up.",
+      "fixing_instruction": "",
+      "extraction_method": "pattern_match"
+    },
+    {
+      "code": "is",
+      "description": "issued, if an attempt is made to radiate a laser beam, when the laser  oscillator  is  not  in  the  LSTR  state  (discharging state).",
+      "fixing_instruction": "|\n|-------|---------------------------------|-----------------------------------------------------------------------------------|\n|     1 | Clogged exhaust pump filter     | Replace the exhaust pump filter.",
+      "extraction_method": "pattern_match"
+    },
+    {
+      "code": "occurs",
+      "description": "when  the  thermal  switch  of  the  magnetic contactor for the exhaust pump is tripped.",
+      "fixing_instruction": "|\n|-------|---------------------------------|-----------------------------------------------------------------------------------|\n|     1 | Clogged exhaust pump filter     | Replace the exhaust pump filter.                                                  |\n|     2 | Clogged exhaust pump air outlet | Clean the outlet and remove the foreign matters with which the outlet i",
+      "extraction_method": "pattern_match"
+    },
+    {
+      "code": "is",
+      "description": "issued, if the discharge tube gas pressure does not reach [specified discharge tube gas pressure during oscillation tolerance] after HV is set to ON.",
+      "fixing_instruction": "|\n|-------|----------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|\n|     1 | Invalid parameter",
+      "extraction_method": "pattern_match"
+    },
+    {
+      "code": "is",
+      "description": "issued.",
+      "fixing_instruction": "|\n|-------|----------------",
+      "extraction_method": "pattern_match"
+    },
+    {
+      "code": "is",
+      "description": "issued, check that the alarm LED on the LED indicator section of the inverter is lit. At this time, do not turn off the power to the inverter because the alarm will be reset if the power is turned off.",
+      "fixing_instruction": "|\n|-------|---------------------------|-------------------------------------------------------------------------------------------------------------|\n|     1 | Excessive intake pressure | Check whether the values of PRM Nos. 15240, 15241, and 15242",
+      "extraction_method": "pattern_match"
+    },
+    {
+      "code": "s",
+      "description": "and corresponding countermeasures, see the Maintenance Manual (B-70255EN)",
+      "fixing_instruction": "|\n|-------|---------------------------|-------------------------------------------------------------------------------------------------------------|\n|     1 | Excessive intake pressure | Check whether the values of PRM Nos. 15240, 15241, and 15242 are set according to the attached data sheets. |",
+      "extraction_method": "pattern_match"
+    },
+    {
+      "code": "is",
+      "description": "issued, if a frequency reached signal is not received within 120 seconds after the turbo blower is started.",
+      "fixing_instruction": "|\n|-------|---------------------------|-------------------------------------------------------------------------------|\n|     1 | Cable connection abnormal | It is necessary to replace or adjust the part. Call the FANUC service center. |\n|     2 | Faulty turbo blower       | It is necessary to replace or adjust the part. Call the FANUC service center. |\n|     3 | Inverter abnormal",
+      "extraction_method": "pattern_match"
+    },
+    {
+      "code": "y",
+      "description": "turbo blower       | It is necessary to replace or adjust the part. Call the FANUC service center. |",
+      "fixing_instruction": "",
+      "extraction_method": "pattern_match"
+    },
+    {
+      "code": "is",
+      "description": "issued,  if  the  temperature  of  the  turbo  blower motor winding becomes higher than the permissible level.",
+      "fixing_instruction": "|\n|-------|------------------------------------------------|------------------------------------------------------------------------------------------",
+      "extraction_method": "pattern_match"
+    },
+    {
+      "code": "is",
+      "description": "issued if the signal from the turbo blower oil sensor indicates that the oil level has fallen below the setting.",
+      "fixing_instruction": "|\n|-------|----------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|\n|     1 | The oil level is lower than specifi",
+      "extraction_method": "pattern_match"
+    },
+    {
+      "code": "is",
+      "description": "issued, if the beam reflecting unit is not attached with  a  mirror  or  mirror  holder.  (The  C1000 i A  has  no  beam folding unit.)",
+      "fixing_instruction": "|\n|-------|--------------------|------------------------------------------------|\n|     1 | Mirror not mounted | Mount a mirror.                                |\n|     2 | Sensor abnormal    | It is necessary to replace or adjust the part. |\n|     3 | Cable abnormal     | Call the FANUC service center.                 |",
+      "extraction_method": "pattern_match"
+    },
+    {
+      "code": "s",
+      "description": ", then executes piercing during edge machining.",
+      "fixing_instruction": null,
+      "extraction_method": "pattern_match"
+    },
+    {
+      "code": "mask",
+      "description": "time",
+      "fixing_instruction": null,
+      "extraction_method": "pattern_match"
+    },
+    {
+      "code": "monitoring",
+      "description": "starts.",
+      "fixing_instruction": null,
+      "extraction_method": "pattern_match"
+    },
+    {
+      "code": "signal",
+      "description": "(F220#6 MWRN) is output to notify the user of the time to clean or replace the mirror.",
+      "fixing_instruction": null,
+      "extraction_method": "pattern_match"
+    },
+    {
+      "code": "if",
+      "description": "the  gas pressure does not reach the setting",
+      "fixing_instruction": null,
+      "extraction_method": "pattern_match"
+    },
+    {
+      "code": "is",
+      "description": "issued.",
+      "fixing_instruction": null,
+      "extraction_method": "pattern_match"
+    },
+    {
+      "code": "S",
+      "description": "15265",
+      "fixing_instruction": null,
+      "extraction_method": "pattern_match"
+    },
+    {
+      "code": "alarm",
+      "description": "4068 is issued.",
+      "fixing_instruction": null,
+      "extraction_method": "pattern_match"
+    },
+    {
+      "code": "alarm",
+      "description": "4068 is issued.",
+      "fixing_instruction": null,
+      "extraction_method": "pattern_match"
+    },
+    {
+      "code": "4076",
+      "description": "is issued.",
+      "fixing_instruction": null,
+      "extraction_method": "pattern_match"
+    },
+    {
+      "code": "4088",
+      "description": "is issued.",
+      "fixing_instruction": null,
+      "extraction_method": "pattern_match"
+    },
+    {
+      "code": "is",
+      "description": "issued.",
+      "fixing_instruction": null,
+      "extraction_method": "pattern_match"
+    },
+    {
+      "code": "4061",
+      "description": "A/D CONVERTER \\ P",
+      "fixing_instruction": null,
+      "extraction_method": "table_extraction"
+    },
+    {
+      "code": "4062",
+      "description": "A/D CONVERTER \\ Q",
+      "fixing_instruction": null,
+      "extraction_method": "table_extraction"
+    },
+    {
+      "code": "4063",
+      "description": "RF POWER SUPPLY",
+      "fixing_instruction": null,
+      "extraction_method": "table_extraction"
+    },
+    {
+      "code": "4065",
+      "description": "SHUTTER ACTION",
+      "fixing_instruction": null,
+      "extraction_method": "table_extraction"
+    },
+    {
+      "code": "4066",
+      "description": "DISCHARGING",
+      "fixing_instruction": null,
+      "extraction_method": "table_extraction"
+    },
+    {
+      "code": "4067",
+      "description": "LASER CABINET OH",
+      "fixing_instruction": null,
+      "extraction_method": "table_extraction"
+    },
+    {
+      "code": "4068",
+      "description": "BEAM REFLECTION",
+      "fixing_instruction": null,
+      "extraction_method": "table_extraction"
+    },
+    {
+      "code": "4069",
+      "description": "LASER IF PCB",
+      "fixing_instruction": null,
+      "extraction_method": "table_extraction"
+    },
+    {
+      "code": "4070",
+      "description": "CHILLER NOT READY",
+      "fixing_instruction": null,
+      "extraction_method": "table_extraction"
+    },
+    {
+      "code": "4071",
+      "description": "ASSIST GAS NOT READY",
+      "fixing_instruction": null,
+      "extraction_method": "table_extraction"
+    },
+    {
+      "code": "4072",
+      "description": "CHILL FLOW",
+      "fixing_instruction": null,
+      "extraction_method": "table_extraction"
+    },
+    {
+      "code": "4073",
+      "description": "LASER GAS PRES.",
+      "fixing_instruction": null,
+      "extraction_method": "table_extraction"
+    },
+    {
+      "code": "4075",
+      "description": "CHILL TEMP.",
+      "fixing_instruction": null,
+      "extraction_method": "table_extraction"
+    },
+    {
+      "code": "4076",
+      "description": "LASER POWER DOWN",
+      "fixing_instruction": null,
+      "extraction_method": "table_extraction"
+    },
+    {
+      "code": "4077",
+      "description": "ABSORBER TEMP.",
+      "fixing_instruction": null,
+      "extraction_method": "table_extraction"
+    },
+    {
+      "code": "4078",
+      "description": "LASER TUBE PRES.",
+      "fixing_instruction": null,
+      "extraction_method": "table_extraction"
+    },
+    {
+      "code": "4079",
+      "description": "PUSH RESET KEY",
+      "fixing_instruction": null,
+      "extraction_method": "table_extraction"
+    },
+    {
+      "code": "4080",
+      "description": "LASER TUBE EXHAUST",
+      "fixing_instruction": null,
+      "extraction_method": "table_extraction"
+    },
+    {
+      "code": "4081",
+      "description": "GAS PRES. CONTROL",
+      "fixing_instruction": null,
+      "extraction_method": "table_extraction"
+    },
+    {
+      "code": "4082",
+      "description": "TUBE PRES.SENSOR",
+      "fixing_instruction": null,
+      "extraction_method": "table_extraction"
+    },
+    {
+      "code": "4085",
+      "description": "MIRROR CLEANING",
+      "fixing_instruction": null,
+      "extraction_method": "table_extraction"
+    },
+    {
+      "code": "4087",
+      "description": "SHUTTER OH",
+      "fixing_instruction": null,
+      "extraction_method": "table_extraction"
+    },
+    {
+      "code": "4088",
+      "description": "LASER VOLTAGE DOWN",
+      "fixing_instruction": null,
+      "extraction_method": "table_extraction"
+    },
+    {
+      "code": "4089",
+      "description": "ASSIST GAS NO SELECT",
+      "fixing_instruction": null,
+      "extraction_method": "table_extraction"
+    },
+    {
+      "code": "4090",
+      "description": "LASER NOT GENERATE",
+      "fixing_instruction": null,
+      "extraction_method": "table_extraction"
+    },
+    {
+      "code": "4094",
+      "description": "VANE PUMP",
+      "fixing_instruction": null,
+      "extraction_method": "table_extraction"
+    },
+    {
+      "code": "4099",
+      "description": "GAS PRES.NOT REACH",
+      "fixing_instruction": null,
+      "extraction_method": "table_extraction"
+    }
+  ],
+  "maintenance_procedures": [],
+  "extraction_stats": {
+    "total_faults": 98,
+    "total_maintenance_items": 0,
+    "content_length": 180602
+  }
+}
