@@ -11,3 +11,4 @@ kagglehub
 docling
 llama-index
 llama-index-core
+pypdf
