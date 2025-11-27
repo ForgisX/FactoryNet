@@ -15,3 +15,5 @@ pypdf
 python-dotenv
 llama-index-llms-azure-openai
 llama-cloud
+internetarchive 
+requests
