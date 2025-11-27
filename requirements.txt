@@ -4,10 +4,10 @@ pre-commit
 black
 isort
 flake8 
-datasets
 matplotlib
 tqdm
 kagglehub
+datasets
 docling
 llama-index
 llama-index-core

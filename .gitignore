@@ -81,3 +81,6 @@ dataset/
 
 # Ignore manual_processing/data folder
 manual_processing/data/
+
+# Ignore manuals (100s of manuals downloaded from the web)
+manuals/
