@@ -50,9 +50,9 @@ def download_manual(
             temp_dir = os.path.join(output_dir, identifier)
             if os.path.exists(temp_dir):
                 # Look for PDF files in the temp directory
-                for file in os.listdir(temp_dir):
-                    if file.endswith('.pdf'):
-                        temp_file = os.path.join(temp_dir, file)
+                for pdf_file in os.listdir(temp_dir):
+                    if pdf_file.endswith('.pdf'):
+                        temp_file = os.path.join(temp_dir, pdf_file)
                         # Move to final location
                         shutil.move(temp_file, final_output_path)
                         # Remove the now-empty temp directory
