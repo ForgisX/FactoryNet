@@ -243,7 +243,7 @@ def search_and_download_ip_free_manuals(
             
             if downloaded >= count:
                 # Cancel remaining tasks
-                for f in future_to_item:
+                for f in future_to_item.keys():
                     f.cancel()
                 break
     
