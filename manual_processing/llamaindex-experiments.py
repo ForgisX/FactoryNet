@@ -1,163 +1,165 @@
+"""
+LlamaIndex Experiments - Fault Extraction from PDF Manuals
+
+This script extracts machine faults, root causes, and fixing steps from PDF manuals.
+Uses Azure OpenAI for LLM-based extraction and pypdf for PDF parsing.
+"""
+
 import os
 import json
 import asyncio
-from typing import List, Optional, Literal
 from dotenv import load_dotenv
-from llama_index.core.bridge.pydantic import BaseModel, Field
-from llama_parse import LlamaParse
+from pypdf import PdfReader
 from llama_index.llms.azure_openai import AzureOpenAI
-from llama_index.core.program import LLMTextCompletionProgram
 
 load_dotenv()
-
-# --- Data Models ---
-
-class MachineMetadata(BaseModel):
-    manufacturer: str
-    model: str
-    series: str
-    description: str
-
-class FixingStep(BaseModel):
-    order: int
-    description: str
-
-class FixingSequence(BaseModel):
-    source: str
-    steps: List[FixingStep]
-    confidence_score: float
-
-class RootCause(BaseModel):
-    id: str
-    description: str
-    fixing_sequences: List[FixingSequence]
-
-class MachineFault(BaseModel):
-    fault_code: str
-    fault_message: str
-    root_causes: List[RootCause]
-    source_chunk: str
-
-class FaultList(BaseModel):
-    faults: List[MachineFault]
 
 # --- Setup ---
 
 llm = AzureOpenAI(
     model="gpt-4",
-    deployment_name=os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME", "gpt-4"), # Fallback or env var
+    deployment_name=os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME", "gpt-4"),
     api_key=os.getenv("AZURE_OPENAI_API_KEY"),
     azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
     api_version=os.getenv("AZURE_OPENAI_API_VERSION"),
     temperature=0
 )
 
-parser = LlamaParse(
-    api_key=os.getenv("LLAMA_CLOUD_API_KEY"),
-    result_type="markdown",
-    verbose=True,
-    language="en",
-)
-
 # --- Extraction Functions ---
 
-async def extract_metadata(markdown_text: str) -> MachineMetadata:
+async def extract_metadata(text: str) -> dict:
+    """Extract machine metadata from the manual."""
     print("Extracting Metadata...")
-    prompt_template_str = (
-        "Extract the machine metadata from the following text:\n"
-        "---------------------\n"
-        "{text}\n"
-        "---------------------\n"
-    )
-    program = LLMTextCompletionProgram.from_defaults(
-        output_cls=MachineMetadata,
-        llm=llm,
-        prompt_template_str=prompt_template_str,
-    )
-    # Use first 2000 chars for metadata extraction as it's usually at the top
-    return program(text=markdown_text[:2000])
+    
+    prompt = f"""Extract the machine metadata from the following text and return ONLY a JSON object with these fields:
+- manufacturer (string)
+- model (string)
+- series (string)
+- description (string)
 
-async def extract_faults(markdown_text: str) -> List[MachineFault]:
-    print("Extracting Faults (Step 1)...")
-    # Simple chunking by "Number" or "Message" keywords often found in Fanuc manuals
-    # For now, we'll just pass the whole text if it's small, or chunk it blindly.
-    # Given the sample might be large, let's try to split by some heuristic or just use a large context window.
-    # For this POC, we'll assume the relevant section is passed or we split by pages.
+Text:
+---------------------
+{text[:2000]}
+---------------------
+
+Return only valid JSON, no other text."""
+
+    response = await llm.acomplete(prompt)
+    try:
+        return json.loads(str(response))
+    except json.JSONDecodeError as e:
+        print(f"Failed to parse metadata JSON: {e}")
+        print(f"Response was: {response}")
+        return {"manufacturer": "Unknown", "model": "Unknown", "series": "Unknown", "description": ""}
+
+async def extract_faults(text: str) -> list:
+    """Extract faults, root causes, and fixing steps from the manual."""
+    print("Extracting Faults...")
     
-    # Heuristic: Split by "Number" if possible, or just arbitrary chunks.
-    # Let's try to extract from the whole text for the POC, assuming it fits in context (GPT-4 128k).
-    # If not, we'd iterate.
-    
-    prompt_template_str = (
-        "Extract all machine faults, their root causes, and fixing steps from the following text.\n"
-        "For each fault, include the original text chunk where it was found in 'source_chunk'.\n"
-        "Tag the fixing sequence source as 'manual'.\n"
-        "---------------------\n"
-        "{text}\n"
-        "---------------------\n"
-    )
-    
-    # We use a list container to extract multiple
-    program = LLMTextCompletionProgram.from_defaults(
-        output_cls=FaultList,
-        llm=llm,
-        prompt_template_str=prompt_template_str,
-    )
-    
-    # In a real scenario, we would iterate over chunks. 
-    # Here we pass the text. If it's too long, we might need to truncate or chunk.
-    # Let's assume the sample is manageable or we take a significant portion.
-    result = program(text=markdown_text)
-    return result.faults
+    prompt = f"""Extract all machine faults from the following manual text. Return ONLY a JSON array of fault objects.
+
+Each fault object should have:
+- fault_code (string): The error code
+- fault_message (string): The error message
+- root_causes (array): List of root cause objects
+- source_chunk (string): Relevant excerpt from the manual
+
+Each root_cause object should have:
+- id (string): A unique identifier (e.g., "rc_001")
+- description (string): Description of the root cause
+- fixing_sequences (array): List of fixing sequence objects
+
+Each fixing_sequence object should have:
+- source (string): "manual" for now
+- steps (array): List of step objects
+- confidence_score (number): 1.0 for manual extraction
+
+Each step object should have:
+- order (number): Step number
+- description (string): What to do
+
+Text:
+---------------------
+{text[:15000]}
+---------------------
+
+Return only valid JSON array, no other text."""
+
+    response = await llm.acomplete(prompt)
+    try:
+        result = json.loads(str(response))
+        if isinstance(result, dict) and "faults" in result:
+            return result["faults"]
+        return result if isinstance(result, list) else []
+    except json.JSONDecodeError as e:
+        print(f"Failed to parse faults JSON: {e}")
+        print(f"Response was: {response}")
+        return []
 
 async def main():
-    pdf_path = "./sample_manuals/B-70254EN_01_101028_fanuc_laser_digital.pdf"
+    # Get script directory
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    pdf_path = os.path.join(script_dir, "sample_manuals", "B-70254EN_01_101028_fanuc_laser_digital.pdf")
     
-    # 1. Parse
-    print(f"Parsing {pdf_path}...")
-    documents = await parser.aload_data(pdf_path)
-    full_markdown = "\n\n".join([doc.text for doc in documents])
+    # Step 0: Parse PDF using pypdf
+    print(f"Parsing {pdf_path} with pypdf...")
+    reader = PdfReader(pdf_path)
+    full_text = ""
+    for page in reader.pages:
+        full_text += page.extract_text() + "\n\n"
+    print(f"Parsed {len(reader.pages)} pages, {len(full_text)} characters")
     
-    # 2. Metadata
-    metadata = await extract_metadata(full_markdown)
-    print("Metadata Extracted:", metadata.model_dump_json(indent=2))
+    # Step 0: Extract Metadata
+    metadata = await extract_metadata(full_text)
+    print("\n--- Metadata ---")
+    print(json.dumps(metadata, indent=2))
     
-    # 3. Fault Extraction (Step 1 & 2 combined in one LLM call for POC efficiency, 
-    # but logically distinct in data model)
-    # Note: The prompt asks for root causes too, covering Step 2.
-    faults = await extract_faults(full_markdown)
+    # Step 1 & 2: Extract Faults and Root Causes
+    faults = await extract_faults(full_text)
+    print(f"\n--- Extracted {len(faults)} faults ---")
     
-    # 4. Output
-    print(f"Extracted {len(faults)} faults.")
-    
-    # Transform to DB structure
+    # Build databases
     fault_db = {}
     root_cause_db = {}
     
     for fault in faults:
-        fault_db[fault.fault_code] = fault.model_dump(exclude={"root_causes"})
-        for rc in fault.root_causes:
-            root_cause_db[rc.id] = rc.model_dump()
-            
-    print("\n--- Fault DB Sample ---")
-    print(json.dumps(list(fault_db.values())[:2], indent=2))
+        fault_code = fault.get("fault_code", "UNKNOWN")
+        fault_db[fault_code] = {
+            "fault_code": fault_code,
+            "fault_message": fault.get("fault_message", ""),
+            "source_chunk": fault.get("source_chunk", "")
+        }
+        
+        for rc in fault.get("root_causes", []):
+            rc_id = rc.get("id", f"rc_{len(root_cause_db)}")
+            root_cause_db[rc_id] = rc
     
-    print("\n--- Root Cause DB Sample ---")
-    print(json.dumps(list(root_cause_db.values())[:2], indent=2))
+    # Save to files
+    output_dir = "./manual_processing/data"
+    os.makedirs(output_dir, exist_ok=True)
+    
+    with open(f"{output_dir}/metadata.json", "w") as f:
+        json.dump(metadata, f, indent=2)
+    
+    with open(f"{output_dir}/fault_db.json", "w") as f:
+        json.dump(fault_db, f, indent=2)
+    
+    with open(f"{output_dir}/root_cause_db.json", "w") as f:
+        json.dump(root_cause_db, f, indent=2)
+    
+    print(f"\n--- Saved databases to {output_dir} ---")
+    print(f"Metadata: {len(metadata)} fields")
+    print(f"Fault DB: {len(fault_db)} faults")
+    print(f"Root Cause DB: {len(root_cause_db)} root causes")
+    
+    # Print samples
+    if fault_db:
+        print("\n--- Fault DB Sample ---")
+        print(json.dumps(list(fault_db.values())[:2], indent=2))
+    
+    if root_cause_db:
+        print("\n--- Root Cause DB Sample ---")
+        print(json.dumps(list(root_cause_db.values())[:2], indent=2))
 
 if __name__ == "__main__":
-    print("Instantiating models...")
-    try:
-        m = MachineMetadata(manufacturer="Fanuc", model="Laser", series="C", description="A laser machine")
-        print("Metadata instantiated")
-        fs = FixingStep(order=1, description="Fix it")
-        seq = FixingSequence(source="manual", steps=[fs], confidence_score=1.0)
-        rc = RootCause(id="rc1", description="Broken", fixing_sequences=[seq])
-        mf = MachineFault(fault_code="101", fault_message="Error", root_causes=[rc], source_chunk="chunk")
-        fl = FaultList(faults=[mf])
-        print("All models instantiated successfully")
-    except Exception as e:
-        print(f"Model instantiation failed: {e}")
-        exit(1)
-    
-    # asyncio.run(main())
+    asyncio.run(main())
