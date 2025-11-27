@@ -78,3 +78,6 @@ Thumbs.db
 
 # Ignore datasets folder
 dataset/
+
+# Ignore manual_processing/data folder
+manual_processing/data/
