@@ -95,13 +95,18 @@ def download_manual(
     
     return (identifier, False, f"✗ Failed after {retry_count + 1} attempts: {title[:50]}")
 
-def search_and_download_ip_free_manuals(count=100, output_dir="manuals", max_workers=5):
+def search_and_download_ip_free_manuals(
+    count: int = 100,
+    output_dir: str = "manuals",
+    max_workers: int = 5
+) -> None:
     """
     Search Internet Archive for IP-free manuals and download them.
-    
+
     Args:
-        count: Number of manuals to download
-        output_dir: Directory to save downloaded files
+        count (int): Number of manuals to download.
+        output_dir (str): Directory to save downloaded files.
+        max_workers (int): Maximum number of concurrent download threads.
     """
     print(f"Searching Internet Archive for {count} IP-free manuals...")
     
