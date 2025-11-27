@@ -13,10 +13,23 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from internetarchive import search_items, get_item, download
 from requests.exceptions import HTTPError
 
-def download_manual(identifier, title, output_dir="manuals", retry_count=2):
+def download_manual(
+    identifier: str,
+    title: str,
+    output_dir: str = "manuals",
+    retry_count: int = 2
+) -> tuple[str, bool, str]:
     """
     Download a manual from Internet Archive by identifier.
-    Returns (identifier, success, message) tuple.
+
+    Args:
+        identifier (str): The Internet Archive identifier for the manual.
+        title (str): The title of the manual.
+        output_dir (str, optional): Directory to save the downloaded PDF. Defaults to "manuals".
+        retry_count (int, optional): Number of times to retry on transient errors. Defaults to 2.
+
+    Returns:
+        tuple[str, bool, str]: (identifier, success, message)
     """
     # Final output path
     final_output_path = os.path.join(output_dir, f"{identifier}.pdf")
