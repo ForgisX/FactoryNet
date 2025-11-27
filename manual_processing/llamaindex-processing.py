@@ -7,6 +7,11 @@ Uses Azure OpenAI for LLM-based extraction and pypdf for PDF parsing.
 
 import os
 import json
+import argparse
+import time
+from pathlib import Path
+from tqdm import tqdm
+from datetime import datetime
 import asyncio
 from typing import List
 from dotenv import load_dotenv
@@ -119,46 +124,81 @@ Extract all faults with their root causes and fixing sequences."""
     return program(text=text[:15000])
 
 def main():
-    # Get script directory
+    # CLI args
+    parser = argparse.ArgumentParser(description="Extract faults and metadata from a PDF manual using LlamaIndex (Azure OpenAI)")
+    parser.add_argument("pdf", nargs="?", default=None, help="Path to the input PDF manual (optional, defaults to sample laser manual)")
+    parser.add_argument("--out", dest="out_dir", default=None, help="Optional output directory. Defaults to manual_processing/data/llamaindex_outputs/<pdf_stem>/<timestamp>/")
+    args = parser.parse_args()
+
+    # Resolve paths
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    pdf_path = os.path.join(script_dir, "sample_manuals", "B-70254EN_01_101028_fanuc_laser_digital.pdf")
-    pdf_path = os.path.join(script_dir, "sample_manuals", "B54810E_F1011_fanuc_scanned.pdf")
+    if args.pdf is None:
+        default_pdf = os.path.join(script_dir, "sample_manuals", "B-70254EN_01_101028_fanuc_laser_digital.pdf")
+        pdf_path = os.path.abspath(default_pdf)
+        print(f"No PDF argument supplied. Using default: {pdf_path}")
+    else:
+        pdf_path = os.path.abspath(args.pdf)
+    if not os.path.isfile(pdf_path):
+        raise FileNotFoundError(f"PDF not found: {pdf_path}")
     
     # Step 0: Parse PDF using pypdf
     print(f"Parsing {pdf_path} with pypdf...")
+    parse_start = time.perf_counter()
     reader = PdfReader(pdf_path)
     full_text = ""
-    for page in reader.pages:
-        full_text += page.extract_text() + "\n\n"
-    print(f"Parsed {len(reader.pages)} pages, {len(full_text)} characters")
+    for page in tqdm(reader.pages, desc="Pages", unit="page"):
+        page_text = page.extract_text() or ""
+        full_text += page_text + "\n\n"
+    parse_elapsed = time.perf_counter() - parse_start
+    print(f"Parsed {len(reader.pages)} pages, {len(full_text)} characters in {parse_elapsed:.2f}s")
     
     # Step 0: Extract Metadata
+    meta_start = time.perf_counter()
     metadata = extract_metadata(full_text)
+    meta_elapsed = time.perf_counter() - meta_start
     print("\n--- Metadata ---")
     print(metadata.model_dump_json(indent=2))
+    print(f"Metadata extraction time: {meta_elapsed:.2f}s")
     
     # Step 1 & 2: Extract Faults and Root Causes
+    faults_start = time.perf_counter()
     fault_list = extract_faults(full_text)
+    faults_elapsed = time.perf_counter() - faults_start
     print(f"\n--- Extracted {len(fault_list.faults)} faults ---")
+    print(f"Fault extraction time: {faults_elapsed:.2f}s")
     
     # Build databases
     fault_db = {}
     root_cause_db = {}
     
-    for fault in fault_list.faults:
+    build_start = time.perf_counter()
+    for fault in tqdm(fault_list.faults, desc="Faults", unit="fault"):
         fault_db[fault.fault_code] = {
             "fault_code": fault.fault_code,
             "fault_message": fault.fault_message,
             "source_chunk": fault.source_chunk
         }
-        
         for rc in fault.root_causes:
             root_cause_db[rc.id] = rc.model_dump()
+    build_elapsed = time.perf_counter() - build_start
     
     # Save to files
-    output_dir = os.path.join(script_dir, "data")
+    if args.out_dir:
+        output_dir = os.path.abspath(args.out_dir)
+    else:
+        pdf_stem = Path(pdf_path).stem
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        output_dir = os.path.join(script_dir, "data", "llamaindex_outputs", pdf_stem, timestamp)
     os.makedirs(output_dir, exist_ok=True)
+
+    # Save raw manual text as markdown
+    markdown_path = os.path.join(output_dir, f"{Path(pdf_path).stem}.md")
+    with open(markdown_path, "w", encoding="utf-8") as f_md:
+        f_md.write(f"# Manual: {Path(pdf_path).name}\n\n")
+        f_md.write(full_text)
+    print(f"Saved markdown to {markdown_path}")
     
+    save_start = time.perf_counter()
     with open(os.path.join(output_dir, "metadata.json"), "w") as f:
         json.dump(metadata.model_dump(), f, indent=2)
     
@@ -167,11 +207,16 @@ def main():
     
     with open(os.path.join(output_dir, "root_cause_db.json"), "w") as f:
         json.dump(root_cause_db, f, indent=2)
+    save_elapsed = time.perf_counter() - save_start
     
     print(f"\n--- Saved databases to {output_dir} ---")
-    print(f"Metadata: {len(metadata.model_dump())} fields")
-    print(f"Fault DB: {len(fault_db)} faults")
+    print(f"Markdown file: {markdown_path}")
+    print(f"Metadata: {len(metadata.model_dump())} fields ( {meta_elapsed:.2f}s )")
+    print(f"Fault DB: {len(fault_db)} faults (extract {faults_elapsed:.2f}s, build {build_elapsed:.2f}s)")
     print(f"Root Cause DB: {len(root_cause_db)} root causes")
+    print(f"File save time: {save_elapsed:.2f}s")
+    total_elapsed = parse_elapsed + meta_elapsed + faults_elapsed + build_elapsed + save_elapsed
+    print(f"Total processing time: {total_elapsed:.2f}s")
     
     # Print samples
     if fault_db:

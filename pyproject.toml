@@ -2,5 +2,8 @@
 name = "xelerit-base"
 version = "0.1.0"
 description = "A base repository for Xelerit projects."
-authors = ["Xelerit"]
-requires-python = ">=3.8" 
+authors = [{name = "Xelerit"}]
+requires-python = ">=3.8"
+
+[tool.setuptools]
+packages = ["core", "manual_processing"] 
