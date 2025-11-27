@@ -25,7 +25,7 @@ python scripts/download_from_internet_archive.py --count 1000 --output-dir manua
 Parameters:
  * **count**: Number of manuals we want to download
  * **output-dir**: Path of output directory
- * **workers**: Number of thread to parallelize the proces 
+ * **workers**: Number of thread to parallelize the process 
 
 
 
