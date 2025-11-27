@@ -16,6 +16,19 @@ uv venv
 uv pip install -r requirements.txt
 ```
 
+### Download from Internet Archive
+You can download manuals from internet archive with the following script
+
+```bash
+python scripts/download_from_internet_archive.py --count 1000 --output-dir manuals --workers 5 
+```
+Parameters:
+ * **count**: Number of manuals we want to download
+ * **output-dir**: Path of output directory
+ * **workers**: Number of thread to parallelize the proces 
+
+
+
 ### Process a Manual
 
 ```bash
