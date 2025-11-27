@@ -203,8 +203,8 @@ def search_and_download_ip_free_manuals(
     print(f"Found {len(valid_items)} unique valid items. Starting parallel downloads...\n")
     
     # Download in parallel using ThreadPoolExecutor
-    max_workers = min(max_workers, count)  # Don't exceed count or specified workers
-    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+    actual_workers = min(max_workers, count)  # Don't exceed count or specified workers
+    with ThreadPoolExecutor(max_workers=actual_workers) as executor:
         # Submit all download tasks
         future_to_item = {
             executor.submit(download_manual, identifier, title, output_dir): (identifier, title)
