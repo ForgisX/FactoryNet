@@ -187,4 +187,4 @@ cat data/test_output/extracted/*.json
 
 ## License
 
-Part of the FactorySet project.
+Part of the FactoryNet project.

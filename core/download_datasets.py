@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 """
-Utility functions to download the real-world datasets used in FactorySet.
+Utility functions to download the real-world datasets used in FactoryNet.
 
 We rely on `kagglehub` which will cache datasets under `~/.cache/kagglehub`.
 Each helper returns the local path where the dataset is stored so that

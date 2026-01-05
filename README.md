@@ -1,4 +1,4 @@
-# FactorySet
+# FactoryNet
 
 A toolkit for processing factory equipment manuals into structured data for fault diagnosis and maintenance.
 
@@ -9,7 +9,7 @@ A toolkit for processing factory equipment manuals into structured data for faul
 ```bash
 # Clone and setup
 git clone <repository-url>
-cd FactorySet
+cd FactoryNet
 
 # Create virtual environment and install dependencies
 uv venv
@@ -86,7 +86,7 @@ Three simple scripts for converting PDF manuals to structured data:
 ## Project Structure
 
 ```
-FactorySet/
+FactoryNet/
 ├── manual_processing/          # Manual processing scripts
 │   ├── 1_ingest_to_markdown.py    # PDF → Markdown
 │   ├── 2_extract_faults.py        # Markdown → JSON

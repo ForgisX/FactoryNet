@@ -170,8 +170,8 @@ def clean_file(input_path: Path, output_path: Path):
 def main():
     """Main function to clean all markdown files."""
     # Define paths
-    input_dir = Path(r"C:\Users\Jonaspetersen\.gemini\antigravity\scratch\FactorySet\data\docling_outputs")
-    output_dir = Path(r"C:\Users\Jonaspetersen\.gemini\antigravity\scratch\FactorySet\data\docling_outputs_cleaned")
+    input_dir = Path(r"C:\Users\Jonaspetersen\.gemini\antigravity\scratch\FactoryNet\data\docling_outputs")
+    output_dir = Path(r"C:\Users\Jonaspetersen\.gemini\antigravity\scratch\FactoryNet\data\docling_outputs_cleaned")
     
     # Find all .md files
     md_files = list(input_dir.glob("*.md"))

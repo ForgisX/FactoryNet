@@ -160,12 +160,12 @@ if __name__ == "__main__":
         generation_func=gen.iter_telemetry, 
         gen_kwargs=generation_arguments,
         total=total_count,
-        dataset_path='/home/gpiatelli/Xelerit/FactorySet/dataset'
+        dataset_path='/home/gpiatelli/Xelerit/FactoryNet/dataset'
     )
     
     # Push to Hub
-    repo_id = "Forgis/FactorySet"
+    repo_id = "Forgis/FactoryNet"
     load_dataset_to_hub(
-        dataset_path='/home/gpiatelli/Xelerit/FactorySet/dataset',
+        dataset_path='/home/gpiatelli/Xelerit/FactoryNet/dataset',
         repo_id=repo_id
     )
