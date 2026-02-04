@@ -1,4 +1,4 @@
-# FactoryNet: A Benchmark for Evaluating Machine Understanding in Industrial World Models
+# FactoryNet: A Large-Scale Hierarchical Dataset for Industrial Machine Understanding
 
 **NeurIPS 2026 Datasets and Benchmarks Track - DRAFT**
 
@@ -9,9 +9,9 @@
 
 ## Abstract
 
-We introduce **FactoryNet**, a large-scale multimodal benchmark for evaluating whether AI models truly understand industrial machines. Unlike existing fault detection datasets that focus on classification, FactoryNet tests machine understanding through a comprehensive question-answering framework inspired by reading comprehension benchmarks. Given sensor data (telemetry, vision, audio) and semantic priors (manuals, CAD/URDF), models must answer questions about machine state, predict behavior under interventions, reason about causes and effects, and generate actionable responses. We contribute: (1) a hierarchical taxonomy of 500+ machine states organized across five dimensions (Machine, State, Symptom, Cause, Action) inspired by WordNet; (2) 50,000+ annotated episodes from 7 machine types including 4 collaborative robots; (3) a Q&A evaluation framework with 200,000+ questions spanning 6 reasoning types; (4) comprehensive baselines including LLMs, vision-language models, and specialized architectures. FactoryNet enables rigorous evaluation of industrial world models—systems that understand machine physics well enough to answer arbitrary questions about behavior. We release the dataset, evaluation toolkit, and leaderboard at [URL].
+We introduce **FactoryNet**, a large-scale hierarchical dataset for industrial machine understanding. Unlike existing fault detection datasets that focus on classification, FactoryNet tests machine understanding through a comprehensive question-answering framework inspired by reading comprehension benchmarks. Given sensor data (telemetry, vision, audio) and semantic priors (manuals, CAD/URDF), models must answer questions about machine state, predict behavior under interventions, reason about causes and effects, and generate actionable responses. We contribute: (1) a hierarchical taxonomy of 500+ machine states organized across five dimensions (Machine, State, Symptom, Cause, Action) inspired by WordNet; (2) 50,000+ annotated episodes from 7 machine types including 4 collaborative robots; (3) a Q&A evaluation framework with 200,000+ questions spanning 6 reasoning types; (4) comprehensive baselines including LLMs, vision-language models, and specialized architectures. FactoryNet enables rigorous evaluation of industrial world models—systems that understand machine physics well enough to answer arbitrary questions about behavior. We release the dataset, evaluation toolkit, and leaderboard at [URL].
 
-**Keywords:** World Models, Industrial AI, Benchmark, Question Answering, Multimodal, Robotics
+**Keywords:** Dataset, Industrial AI, World Models, Multimodal, Hierarchical Taxonomy, Robotics
 
 ---
 
