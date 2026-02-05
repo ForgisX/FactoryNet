@@ -422,7 +422,7 @@ FactoryNetEpisode = {
     },
 
     # Q&A Annotations (Section 5)
-    "qa_annotations": List[QAPair],
+    "qa_annotations": List[QAPair],  # Each QAPair includes difficulty, criticality, required_expertise
 }
 ```
 
@@ -588,6 +588,53 @@ To prevent models from exploiting superficial patterns, we implement:
 | Diagnostic | 22,000 | 16 words | Categorical, probability |
 | **Total** | **200,000** | 16 words | Mixed |
 
+### 5.5 Q&A Assessment Metadata
+
+Each question is annotated with three assessment dimensions enabling nuanced evaluation beyond raw accuracy:
+
+**Difficulty** (estimated reasoning complexity):
+- **Easy** (40%): Direct sensor lookup, single-step reasoning
+- **Medium** (35%): Combining 2-3 information sources, basic domain knowledge
+- **Hard** (25%): Multi-step reasoning, expert domain knowledge required
+
+**Criticality** (impact of incorrect answers):
+- **Safety-critical** (15%): Incorrect answer could lead to injury, equipment damage, or hazardous conditions (e.g., E-stop procedures, collision avoidance, failure predictions)
+- **Operational** (55%): Affects machine efficiency, maintenance scheduling, or production quality
+- **Informational** (30%): General knowledge queries with no immediate operational impact
+
+**Required Expertise** (domain knowledge level):
+- **Operator** (35%): Basic machine operation knowledge
+- **Technician** (40%): Maintenance and troubleshooting skills
+- **Engineer** (25%): Deep domain expertise, physics understanding
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                    Q&A ASSESSMENT METADATA                                  │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  DIFFICULTY                  CRITICALITY              REQUIRED EXPERTISE    │
+│  ──────────                  ───────────              ──────────────────    │
+│                                                                             │
+│  ┌─────────┐ 40%            ┌─────────────┐ 15%      ┌──────────┐ 35%      │
+│  │  Easy   │                │   Safety-   │          │ Operator │          │
+│  └─────────┘                │   Critical  │          └──────────┘          │
+│  ┌─────────┐ 35%            └─────────────┘          ┌──────────┐ 40%      │
+│  │ Medium  │                ┌─────────────┐ 55%      │Technician│          │
+│  └─────────┘                │ Operational │          └──────────┘          │
+│  ┌─────────┐ 25%            └─────────────┘          ┌──────────┐ 25%      │
+│  │  Hard   │                ┌─────────────┐ 30%      │ Engineer │          │
+│  └─────────┘                │Informational│          └──────────┘          │
+│                             └─────────────┘                                 │
+│                                                                             │
+│  Enables: Difficulty-       Enables: Safety-         Enables: Expertise-   │
+│  stratified analysis        weighted scoring         level benchmarking    │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+                        Figure 6: Q&A Assessment Metadata Distribution
+```
+
+**Key Insight:** A model with 90% overall accuracy but only 60% on safety-critical questions may be less suitable for deployment than a model with 85% overall but 80% on safety-critical questions. These metadata fields enable such nuanced comparisons.
+
 ---
 
 ## 6. Evaluation Metrics
@@ -627,7 +674,30 @@ Default weights: State=0.15, Prediction=0.20, Causal=0.20,
                 Counterfactual=0.20, Procedural=0.10, Diagnostic=0.15
 ```
 
-### 6.4 Transfer Metrics
+### 6.4 Criticality-Weighted Metrics
+
+**Safety-Weighted Accuracy (SWA):** Penalizes failures on critical questions:
+
+```
+SWA = Σ_c w_c × Accuracy_c × N_c / Σ_c w_c × N_c
+
+Default weights: safety_critical=3.0, operational=1.5, informational=1.0
+```
+
+**Safety Failure Rate (SFR):** Critical deployment metric:
+
+```
+SFR = (Incorrect safety-critical answers) / (Total safety-critical questions)
+```
+
+| Metric | Description | Use Case |
+|--------|-------------|----------|
+| SWA | Criticality-weighted accuracy | Deployment readiness |
+| SFR | Safety-critical failure rate | Risk assessment |
+| Acc@Difficulty | Accuracy stratified by difficulty | Model capability analysis |
+| Acc@Expertise | Accuracy stratified by required expertise | Target user evaluation |
+
+### 6.6 Transfer Metrics
 
 | Transfer Type | Metric |
 |---------------|--------|
@@ -635,6 +705,7 @@ Default weights: State=0.15, Prediction=0.20, Causal=0.20,
 | Cross-fault | Accuracy on unseen fault categories |
 | Zero-shot | Performance with no task-specific training |
 | Few-shot | Performance with k={1,5,10} examples |
+| Safety-critical transfer | SWA on unseen machine types |
 
 ---
 
@@ -644,15 +715,19 @@ Default weights: State=0.15, Prediction=0.20, Causal=0.20,
 
 We evaluate four categories of approaches:
 
-**Category 1: Classical Methods**
+**Category 1: Classical Methods (Multiple-Choice Setting)**
 - Random baseline
 - SVM + handcrafted features (spectral, statistical)
 - XGBoost + feature engineering
+
+*Note:* Classical methods do not generate natural language. We evaluate them in a **multiple-choice setting** where each question is presented with 4-5 candidate answers. The classifier selects among options based on extracted sensor features. This applies to question types with categorical/structured answers (State, Prediction yes/no, Diagnostic). For free-form questions (Procedural explanations, detailed Causal reasoning), classical methods are marked N/A.
 
 **Category 2: Deep Learning (Sensor-Only)**
 - TCN (Temporal Convolutional Network) [21]
 - Transformer encoder [22]
 - TimeSformer (video) [23]
+
+*Evaluated in both multiple-choice and classification-to-template modes.*
 
 **Category 3: Multimodal Deep Learning**
 - CLIP-style sensor-text alignment
@@ -665,45 +740,71 @@ We evaluate four categories of approaches:
 - Claude + RAG
 - Fine-tuned LLaMA-3 on FactoryNet
 
+*LLM-based methods are evaluated on all question types with free-form generation.*
+
 [TODO: Add results table after experiments]
 
 ### 7.2 Main Results
 
 ```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                         MAIN RESULTS (PLACEHOLDER)                          │
-├─────────────────────────────────────────────────────────────────────────────┤
-│                                                                             │
-│  Model                    State  Pred  Causal  Counter  Proc  Diag   FNS   │
-│  ─────────────────────────────────────────────────────────────────────────  │
-│  Random                   XX.X   XX.X   XX.X    XX.X    XX.X  XX.X   XX.X  │
-│  SVM + Features           XX.X   XX.X   XX.X    XX.X    XX.X  XX.X   XX.X  │
-│  XGBoost                  XX.X   XX.X   XX.X    XX.X    XX.X  XX.X   XX.X  │
-│  ─────────────────────────────────────────────────────────────────────────  │
-│  TCN                      XX.X   XX.X   XX.X    XX.X    XX.X  XX.X   XX.X  │
-│  Transformer              XX.X   XX.X   XX.X    XX.X    XX.X  XX.X   XX.X  │
-│  TimeSformer              XX.X   XX.X   XX.X    XX.X    XX.X  XX.X   XX.X  │
-│  ─────────────────────────────────────────────────────────────────────────  │
-│  CLIP-Industrial          XX.X   XX.X   XX.X    XX.X    XX.X  XX.X   XX.X  │
-│  Multimodal Fusion        XX.X   XX.X   XX.X    XX.X    XX.X  XX.X   XX.X  │
-│  ─────────────────────────────────────────────────────────────────────────  │
-│  GPT-4 Zero-shot          XX.X   XX.X   XX.X    XX.X    XX.X  XX.X   XX.X  │
-│  GPT-4 + RAG              XX.X   XX.X   XX.X    XX.X    XX.X  XX.X   XX.X  │
-│  Claude + RAG             XX.X   XX.X   XX.X    XX.X    XX.X  XX.X   XX.X  │
-│  LLaMA-3 Fine-tuned       XX.X   XX.X   XX.X    XX.X    XX.X  XX.X   XX.X  │
-│  ─────────────────────────────────────────────────────────────────────────  │
-│  Human Expert             XX.X   XX.X   XX.X    XX.X    XX.X  XX.X   XX.X  │
-│                                                                             │
-│  Table 1: Main results on FactoryNet test set. Best per-category bolded.   │
-│                                                                             │
-└─────────────────────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────────────────────┐
+│                              MAIN RESULTS (PLACEHOLDER)                               │
+├──────────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                      │
+│  Model                    State  Pred  Causal  Counter  Proc  Diag   FNS    SWA     │
+│  ──────────────────────────────────────────────────────────────────────────────────  │
+│  Random                   XX.X   XX.X   XX.X    XX.X    XX.X  XX.X   XX.X   XX.X    │
+│  SVM + Features           XX.X   XX.X   XX.X    XX.X    XX.X  XX.X   XX.X   XX.X    │
+│  XGBoost                  XX.X   XX.X   XX.X    XX.X    XX.X  XX.X   XX.X   XX.X    │
+│  ──────────────────────────────────────────────────────────────────────────────────  │
+│  TCN                      XX.X   XX.X   XX.X    XX.X    XX.X  XX.X   XX.X   XX.X    │
+│  Transformer              XX.X   XX.X   XX.X    XX.X    XX.X  XX.X   XX.X   XX.X    │
+│  TimeSformer              XX.X   XX.X   XX.X    XX.X    XX.X  XX.X   XX.X   XX.X    │
+│  ──────────────────────────────────────────────────────────────────────────────────  │
+│  CLIP-Industrial          XX.X   XX.X   XX.X    XX.X    XX.X  XX.X   XX.X   XX.X    │
+│  Multimodal Fusion        XX.X   XX.X   XX.X    XX.X    XX.X  XX.X   XX.X   XX.X    │
+│  ──────────────────────────────────────────────────────────────────────────────────  │
+│  GPT-4 Zero-shot          XX.X   XX.X   XX.X    XX.X    XX.X  XX.X   XX.X   XX.X    │
+│  GPT-4 + RAG              XX.X   XX.X   XX.X    XX.X    XX.X  XX.X   XX.X   XX.X    │
+│  Claude + RAG             XX.X   XX.X   XX.X    XX.X    XX.X  XX.X   XX.X   XX.X    │
+│  LLaMA-3 Fine-tuned       XX.X   XX.X   XX.X    XX.X    XX.X  XX.X   XX.X   XX.X    │
+│  ──────────────────────────────────────────────────────────────────────────────────  │
+│  Human Expert             XX.X   XX.X   XX.X    XX.X    XX.X  XX.X   XX.X   XX.X    │
+│                                                                                      │
+│  Table 1: Main results on FactoryNet test set. FNS=FactoryNet Score,                │
+│  SWA=Safety-Weighted Accuracy. Best per-category bolded.                            │
+│                                                                                      │
+└──────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
-### 7.3 Transfer Learning Results
+### 7.3 Criticality Analysis
+
+```
+┌──────────────────────────────────────────────────────────────────────────────────────┐
+│                         CRITICALITY BREAKDOWN (PLACEHOLDER)                          │
+├──────────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                      │
+│  Model                    Safety-Crit  Operational  Informational   SFR (↓)         │
+│  ──────────────────────────────────────────────────────────────────────────────────  │
+│  GPT-4 + RAG              XX.X         XX.X         XX.X            XX.X            │
+│  Claude + RAG             XX.X         XX.X         XX.X            XX.X            │
+│  LLaMA-3 Fine-tuned       XX.X         XX.X         XX.X            XX.X            │
+│  Multimodal Fusion        XX.X         XX.X         XX.X            XX.X            │
+│  ──────────────────────────────────────────────────────────────────────────────────  │
+│  Human Expert             XX.X         XX.X         XX.X            XX.X            │
+│                                                                                      │
+│  Table 2: Accuracy by question criticality. SFR = Safety Failure Rate (lower        │
+│  is better). Models may have high overall accuracy but poor safety-critical         │
+│  performance.                                                                        │
+│                                                                                      │
+└──────────────────────────────────────────────────────────────────────────────────────┘
+```
+
+### 7.4 Transfer Learning Results
 
 [TODO: Cross-machine transfer table]
 
-### 7.4 Ablation Studies
+### 7.5 Ablation Studies
 
 **Impact of Semantic Priors:**
 
@@ -718,7 +819,7 @@ We evaluate four categories of approaches:
 
 [TODO: Results varying question type weights]
 
-### 7.5 Analysis
+### 7.6 Analysis
 
 **What Makes Questions Hard?**
 
@@ -726,7 +827,16 @@ We evaluate four categories of approaches:
 - Fault rarity
 - Causal chain depth
 - Required reasoning steps
-- Cross-machine transfer]
+- Cross-machine transfer
+- Criticality level correlation]
+
+**Safety-Critical Failure Analysis:**
+
+[TODO: Analyze which types of safety-critical questions models fail most:
+- E-stop/emergency procedures
+- Collision prediction
+- Failure consequence reasoning
+- Counterfactual safety scenarios]
 
 **Error Analysis:**
 
@@ -742,7 +852,9 @@ We evaluate four categories of approaches:
 1. Finding about semantic priors
 2. Finding about cross-machine transfer
 3. Finding about counterfactual reasoning
-4. Gap between LLMs and specialized models]
+4. Gap between LLMs and specialized models
+5. Finding about safety-critical performance vs overall accuracy
+6. Which model categories perform best on safety-critical questions]
 
 ### 8.2 Limitations
 

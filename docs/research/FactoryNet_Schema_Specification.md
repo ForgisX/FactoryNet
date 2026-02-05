@@ -521,7 +521,6 @@ class QAPair:
     question_text: str
     question_type: str                 # "state" | "prediction" | "causal" |
                                        # "counterfactual" | "procedural" | "diagnostic"
-    question_difficulty: str           # "easy" | "medium" | "hard"
 
     # Answer
     answer_text: str
@@ -537,11 +536,56 @@ class QAPair:
     # Reasoning (for training/analysis)
     reasoning_chain: Optional[str]     # Step-by-step reasoning
 
-    # Metadata
+    # === Q&A Assessment Metadata ===
+    # These fields enable nuanced evaluation beyond raw accuracy
+    difficulty: str                    # "easy" | "medium" | "hard"
+    criticality: str                   # "safety_critical" | "operational" | "informational"
+    required_expertise: str            # "operator" | "technician" | "engineer"
+
+    # Generation metadata
     template_id: Optional[str]         # If generated from template
     annotator_id: str
     confidence: float
 ```
+
+### 3.6 Q&A Assessment Metadata
+
+Each question is annotated with assessment metadata to enable nuanced evaluation:
+
+```yaml
+qa_assessment:
+  difficulty:
+    - easy        # Direct lookup, single sensor reading
+    - medium      # Requires combining 2-3 pieces of information
+    - hard        # Requires multi-step reasoning, domain knowledge
+
+  criticality:
+    - safety_critical   # Incorrect answer could lead to injury/damage
+    - operational       # Affects machine operation/efficiency
+    - informational     # General knowledge, no immediate impact
+
+  required_expertise:
+    - operator          # Basic machine operation knowledge
+    - technician        # Maintenance and troubleshooting skills
+    - engineer          # Deep domain expertise, design knowledge
+```
+
+**Difficulty Heuristics:**
+| Difficulty | Reasoning Steps | Sensors Required | Domain Knowledge |
+|------------|-----------------|------------------|------------------|
+| Easy | 1 | 1-2 | None |
+| Medium | 2-3 | 2-4 | Basic |
+| Hard | 4+ | 3+ | Expert |
+
+**Criticality Assignment Rules:**
+- **Safety-critical:** Questions about E-stops, collision avoidance, safety interlocks, hazardous conditions, failure modes that could cause injury
+- **Operational:** Questions about fault diagnosis, maintenance procedures, performance optimization, error recovery
+- **Informational:** Questions about current state readings, general machine information, non-urgent metrics
+
+**Evaluation Use Cases:**
+1. **Safety-Weighted Scoring:** Penalize safety-critical failures more heavily
+2. **Expertise-Stratified Analysis:** Compare model performance at different expertise levels
+3. **Criticality Heat Maps:** Visualize which critical questions models fail
 
 ---
 
@@ -704,13 +748,15 @@ Columns:
       "qa_id": "FN-2026-00001-Q001",
       "question_text": "What is the current state of joint 3?",
       "question_type": "state",
-      "question_difficulty": "easy",
       "answer_text": "Joint 3 is at 45.2 degrees, stationary",
       "answer_type": "text",
       "evidence_steps": [100, 101, 102],
       "evidence_sensors": ["joint_2_position", "joint_2_velocity"],
       "manual_refs": [],
       "reasoning_chain": "Read joint_2_position (45.2°) and joint_2_velocity (0 rad/s) at current timestep.",
+      "difficulty": "easy",
+      "criticality": "informational",
+      "required_expertise": "operator",
       "template_id": "state_joint_position",
       "annotator_id": "auto_001",
       "confidence": 1.0
@@ -719,16 +765,35 @@ Columns:
       "qa_id": "FN-2026-00001-Q002",
       "question_text": "What caused the vibration spike at t=45s?",
       "question_type": "causal",
-      "question_difficulty": "hard",
       "answer_text": "Inner race bearing defect on joint 3. The characteristic frequency of 147Hz matches the BPFI for this bearing at the current speed of 1500 RPM.",
       "answer_type": "text",
       "evidence_steps": [4500, 4501, 4502],
       "evidence_sensors": ["vib_ch0", "joint_2_velocity"],
       "manual_refs": ["ABB_IRB_2600_Manual.pdf#section_3.5.2"],
       "reasoning_chain": "1. Observe vibration spike at t=45s. 2. Extract frequency spectrum. 3. Identify peak at 147Hz. 4. Calculate expected BPFI: (N/2) * RPM/60 * (1 + Bd*cos(θ)/Pd) = 147Hz. 5. Match to inner race defect.",
+      "difficulty": "hard",
+      "criticality": "operational",
+      "required_expertise": "engineer",
       "template_id": "causal_vibration_bearing",
       "annotator_id": "expert_001",
       "confidence": 0.85
+    },
+    {
+      "qa_id": "FN-2026-00001-Q003",
+      "question_text": "If the bearing is not replaced, could it cause a collision with the workpiece?",
+      "question_type": "counterfactual",
+      "answer_text": "Yes. Progressive bearing wear will increase position error beyond the 0.5mm tolerance within approximately 200 operating hours, potentially causing collision with the fixture.",
+      "answer_type": "text",
+      "evidence_steps": [4500, 4501, 4502],
+      "evidence_sensors": ["vib_ch0", "joint_2_position", "ee_position"],
+      "manual_refs": ["ABB_IRB_2600_Manual.pdf#section_5.1.3"],
+      "reasoning_chain": "1. Current bearing wear at 85%. 2. Wear progression rate ~0.1%/hour. 3. Position error grows with wear. 4. At 95% wear, expected error exceeds 0.5mm tolerance. 5. Fixture clearance is 0.3mm.",
+      "difficulty": "hard",
+      "criticality": "safety_critical",
+      "required_expertise": "engineer",
+      "template_id": "counterfactual_failure_consequence",
+      "annotator_id": "expert_001",
+      "confidence": 0.75
     }
   ]
 }
@@ -856,9 +921,67 @@ print(results)
 #     "causal": {"accuracy": 0.62},
 #     ...
 #   },
-#   "by_difficulty": {...},
+#   "by_difficulty": {
+#     "easy": {"accuracy": 0.89},
+#     "medium": {"accuracy": 0.71},
+#     "hard": {"accuracy": 0.48}
+#   },
+#   "by_criticality": {
+#     "safety_critical": {"accuracy": 0.62, "count": 8500},
+#     "operational": {"accuracy": 0.71, "count": 12000},
+#     "informational": {"accuracy": 0.82, "count": 9500}
+#   },
+#   "by_expertise": {
+#     "operator": {"accuracy": 0.85},
+#     "technician": {"accuracy": 0.68},
+#     "engineer": {"accuracy": 0.52}
+#   },
 #   "transfer": {...}
 # }
+```
+
+### 7.3 Safety-Weighted Scoring
+
+For applications where safety matters most, use criticality-weighted evaluation:
+
+```python
+from factorynet.evaluation import evaluate_safety_weighted
+
+results = evaluate_safety_weighted(
+    predictions_path="predictions.json",
+    split="test",
+    weights={
+        "safety_critical": 3.0,   # 3x penalty for safety failures
+        "operational": 1.5,       # 1.5x penalty for operational failures
+        "informational": 1.0      # Standard weight
+    }
+)
+
+print(results)
+# {
+#   "weighted_accuracy": 0.64,      # Lower than raw due to safety failures
+#   "safety_critical_accuracy": 0.62,
+#   "safety_failure_rate": 0.38,    # Critical metric for deployment
+#   "raw_accuracy": 0.72
+# }
+```
+
+### 7.4 Criticality Analysis Report
+
+Generate detailed analysis of model performance on critical questions:
+
+```python
+from factorynet.evaluation import criticality_report
+
+report = criticality_report(
+    predictions_path="predictions.json",
+    split="test"
+)
+
+# Returns breakdown of:
+# - Which safety-critical question types are most commonly failed
+# - Correlation between difficulty and criticality
+# - Specific examples of high-criticality failures for review
 ```
 
 ---
