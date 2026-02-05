@@ -171,7 +171,8 @@ class PaderbornAdapter(BaseDatasetAdapter):
             raise ImportError("scipy is required. Install with: pip install scipy")
 
         try:
-            mat_data = loadmat(str(file_path), squeeze_me=True)
+            # Don't squeeze to preserve struct shape for consistent parsing
+            mat_data = loadmat(str(file_path), squeeze_me=False, struct_as_record=True)
         except Exception as e:
             logger.error(f"Failed to load {file_path}: {e}")
             return
@@ -192,8 +193,8 @@ class PaderbornAdapter(BaseDatasetAdapter):
     def _parse_filename(self, file_path: Path) -> Dict[str, Any]:
         """Parse Paderborn filename for metadata.
 
-        Filename format: {BearingCode}_{OperatingCondition}_{RunNumber}.mat
-        Example: KA04_N15_M07_F10_1.mat
+        Filename format: {OperatingCondition}_{BearingCode}_{RunNumber}.mat
+        Example: N09_M07_F10_K001_1.mat or N15_M07_F10_KA04_1.mat
 
         Args:
             file_path: Path to file
@@ -203,8 +204,9 @@ class PaderbornAdapter(BaseDatasetAdapter):
         """
         filename = file_path.stem
 
-        # Extract bearing code
-        bearing_match = re.match(r"^(K[AI]?\d+)", filename)
+        # Extract bearing code - appears after operating condition
+        # Pattern: K followed by optional A/I and digits
+        bearing_match = re.search(r"(K[AI]?\d+)", filename)
         bearing_code = bearing_match.group(1) if bearing_match else "Unknown"
 
         # Extract operating condition
@@ -244,11 +246,10 @@ class PaderbornAdapter(BaseDatasetAdapter):
     ) -> List[SensorChannel]:
         """Extract sensor channels from .mat file.
 
-        Paderborn files typically contain:
-        - vibration: Accelerometer data
-        - current_1, current_2: Motor phase currents
-        - speed: Rotational speed
-        - temp_2: Temperature
+        Paderborn files have a nested structure:
+        - Main key contains struct with fields: Info, X, Y, Description
+        - Y contains array of measurements with Name, Data, Raster fields
+        - Measurements include: vibration_1, phase_current_1/2, force, speed, torque, temp
 
         Args:
             mat_data: Loaded .mat data
@@ -259,44 +260,93 @@ class PaderbornAdapter(BaseDatasetAdapter):
         """
         channels = []
 
-        # Channel name mapping
+        # Channel name mapping: mat_name -> (channel_type, unit, sampling_rate)
         channel_map = {
-            "vibration": ("vibration", "g"),
-            "current_1": ("motor_current_1", "A"),
-            "current_2": ("motor_current_2", "A"),
-            "speed": ("speed", "rpm"),
-            "temp_2": ("temperature", "°C"),
+            "vibration_1": ("vibration", "g", PADERBORN_SAMPLING_RATE),
+            "phase_current_1": ("motor_current_1", "A", PADERBORN_SAMPLING_RATE),
+            "phase_current_2": ("motor_current_2", "A", PADERBORN_SAMPLING_RATE),
+            "speed": ("speed", "rpm", 4000),
+            "torque": ("torque", "Nm", 4000),
+            "force": ("force", "N", 4000),
+            "temp_2_bearing_module": ("temperature", "°C", 1),
         }
 
-        for mat_key, (channel_type, unit) in channel_map.items():
-            if mat_key in mat_data:
-                data = mat_data[mat_key]
-                if isinstance(data, np.ndarray):
-                    data = data.flatten().astype(np.float64)
-                    if len(data) > 100:
-                        channels.append(SensorChannel(
-                            channel_id=f"{file_info['bearing_code']}_{mat_key}",
-                            channel_type=channel_type,
-                            unit=unit,
-                            data=data.tolist(),
-                            sampling_rate_hz=PADERBORN_SAMPLING_RATE,
-                        ))
+        # Try to find the main struct (key matches filename pattern)
+        main_key = None
+        for key in mat_data.keys():
+            if not key.startswith("__"):
+                main_key = key
+                break
 
-        # Try alternate structure (nested in struct)
-        if not channels:
-            for key in mat_data.keys():
-                if key.startswith("__"):
+        if main_key is None:
+            return channels
+
+        # Access the struct
+        struct = mat_data[main_key]
+        if struct.shape == (1, 1):
+            struct = struct[0, 0]
+        elif struct.shape == ():
+            # Already scalar
+            pass
+        else:
+            return channels
+
+        # Check for Y field containing measurements
+        if "Y" not in struct.dtype.names:
+            return channels
+
+        Y = struct["Y"]
+        # Y has shape (1, 7) - need to access Y[0] to get the array of measurements
+        if hasattr(Y, "shape") and len(Y.shape) == 2 and Y.shape[0] == 1:
+            Y = Y[0]  # Now shape is (7,)
+
+        # Extract each measurement channel - use len() for iteration
+        try:
+            num_measurements = len(Y)
+        except TypeError:
+            num_measurements = 0
+
+        for i in range(num_measurements):
+            try:
+                meas = Y[i]
+                if not hasattr(meas, "dtype") or meas.dtype.names is None:
                     continue
-                data = mat_data[key]
-                if isinstance(data, np.ndarray) and data.ndim == 1 and len(data) > 1000:
-                    channels.append(SensorChannel(
-                        channel_id=f"{file_info['bearing_code']}_{key}",
-                        channel_type="vibration",
-                        unit="g",
-                        data=data.astype(np.float64).tolist(),
-                        sampling_rate_hz=PADERBORN_SAMPLING_RATE,
-                    ))
-                    break
+
+                # Get measurement name
+                name_field = meas["Name"]
+                if hasattr(name_field, "flat") and name_field.size > 0:
+                    mat_name = str(name_field.flat[0])
+                else:
+                    continue
+
+                # Get data
+                data_field = meas["Data"]
+                if not isinstance(data_field, np.ndarray):
+                    continue
+
+                data = data_field.flatten().astype(np.float64)
+                if len(data) < 100:
+                    continue
+
+                # Map to channel info
+                if mat_name in channel_map:
+                    channel_type, unit, sample_rate = channel_map[mat_name]
+                else:
+                    channel_type = mat_name
+                    unit = ""
+                    sample_rate = PADERBORN_SAMPLING_RATE
+
+                channels.append(SensorChannel(
+                    channel_id=f"{file_info['bearing_code']}_{mat_name}",
+                    channel_type=channel_type,
+                    unit=unit,
+                    data=data.tolist(),
+                    sampling_rate_hz=sample_rate,
+                ))
+
+            except (IndexError, KeyError, TypeError) as e:
+                logger.debug(f"Failed to extract channel {i}: {e}")
+                continue
 
         return channels
 
